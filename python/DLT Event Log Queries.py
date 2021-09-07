@@ -5,8 +5,8 @@
 # COMMAND ----------
 
 # Fill in the pipelines_id and pipeline_name
-pipelines_id = "c4885e65-0eca-4d87-9c38-88a7840c5f8b"
-pipeline_name = "Wikipedia Python Pipeline"
+pipelines_id = "2d0d59e1-0708-484d-a01a-f1b0cdcc726a"
+pipeline_name = "My_Triggered_Wikipedia_Pipeline"
 
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
@@ -17,7 +17,7 @@ from pyspark.sql.types import *
 
 # COMMAND ----------
 
-# Data Quality Expecations | Flow Progress Completed
+# Data Quality Expectations | Flow Progress Completed
 sqlQuery = """SELECT id, origin, timestamp, details
                 FROM delta.`dbfs:/pipelines/""" + pipelines_id + """/system/events/`
                WHERE details LIKE '%flow_progress%COMPLETED%data_quality%expectations%' order by timestamp desc"""
@@ -43,7 +43,18 @@ df_expectations.createOrReplaceTempView("df_expectations")
 
 # COMMAND ----------
 
+# Display the event log table
+display(df)
+
+# COMMAND ----------
+
+# The Event Log table itself is a Delta table
+display(dbutils.fs.ls("dbfs:/pipelines/" + pipelines_id + "/system/events/"))
+
+# COMMAND ----------
+
 # MAGIC %sql
+# MAGIC -- We can see the data quality stats as defined by our expectations
 # MAGIC SELECT id, timestamp, details_json.flow_progress.data_quality, origin, details_json FROM df_expectations ORDER BY timestamp DESC LIMIT 20
 
 # COMMAND ----------
@@ -84,7 +95,3 @@ df_lineage.createOrReplaceTempView("df_lineage")
 
 # MAGIC %sql
 # MAGIC SELECT id, timestamp, sequence.data_plane_id.seq_no, message, event_type, details_json  FROM df_lineage
-
-# COMMAND ----------
-
-
